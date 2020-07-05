@@ -1,0 +1,45 @@
+# Should be used with the docker-base project that can be fetched here:
+# https://github.com/spydemon/docker-base
+version: '2.0'
+
+services:
+    db:
+        container_name: magento23-db
+        environment:
+            - MYSQL_DATABASE=magento
+            - MYSQL_ROOT_PASSWORD=toor
+        expose:
+            - "3306"
+        image: mariadb:latest
+        ports:
+            - "3451:3306" #MySQL is bind to the port 3403 on the host.
+        networks:
+            - default
+        volumes:
+            - ./db/db:/var/lib/mysql
+    web:
+        container_name: magento23-web
+        expose:
+            - "80"
+        environment:
+            - VIRTUAL_HOST=magento23.local
+        image: spydemon/php73-magento2:0.1
+        volumes:
+            - ..:/var/www
+            - ./config/grunt_config.json:/var/www/grunt-config.json
+            - ./config/grunt_gruntfile.js:/var/www/Gruntfile.js
+            - ./config/magento_env_local.php:/var/www/app/etc/env.php
+            - ./config/nginx_variable_local.conf:/etc/nginx/variable_local.conf
+            - ./config/npm_package.json:/var/www/package.json
+            - ~/.composer:/root/.composer
+            - ~/.composer/auth.json:/var/www/auth.json
+            - home:/root
+        networks:
+            - base
+            - default
+volumes:
+    home:
+networks:
+    base:
+        external: true
+    default:
